@@ -22,6 +22,5 @@ E-Mail:FENGberd@gmail.com<br />
 如果你有兴趣请看提交记录ad3fbc9b09的[README.md](https://github.com/fengberd/FNPC/blob/ad3fbc9b0909680019ccb7f504207ecf37d0eb1c/README.md)文件
 
 # 注意事项
-<br />
-此插件为改版插件，该插件并不能真是配原生GenisysPro />
-我会做个FNPC-L版本用于适配原生GenisysPro或PMMP />
+此插件为改版插件，该插件并不能真是配原生GenisysPro \n
+我会做个FNPC-L版本用于适配原生GenisysPro或PMMP \n
