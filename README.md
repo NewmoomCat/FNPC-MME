@@ -23,4 +23,5 @@ E-Mail:FENGberd@gmail.com<br />
 
 # 注意事项
 此插件为改版插件，该插件并不能真是配原生GenisysPro
+
 我会做个FNPC-L版本用于适配原生GenisysPro或PMMP
