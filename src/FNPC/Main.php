@@ -7,6 +7,16 @@ GitHub Project:
 https://github.com/fengberd/FNPC
 */
 
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\event\Listener;
+use pocketmine\event\entity\EntityLevelChangeEvent;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\entity\Item;
+use pocketmine\Player;
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 
 use FNPC\npc\NPC;
@@ -14,7 +24,7 @@ use FNPC\npc\CommandNPC;
 use FNPC\npc\ReplyNPC;
 use FNPC\npc\TeleportNPC;
 
-class Main extends \pocketmine\plugin\PluginBase implements \pocketmine\event\Listener
+class Main extends PluginBase implements Listener
 {
 	private static $obj=null;
 	private static $registeredNPC=array();
@@ -71,7 +81,7 @@ class Main extends \pocketmine\plugin\PluginBase implements \pocketmine\event\Li
 		{
 			$this->getLogger()->warning('当前核心存在奇葩问题,将导致无法正常显示NPC名称');
 		}
-		if(defined($base.'DATA_LEAD_HOLDER') && !class_exists('\\pocketmine\\network\\protocol\\SetEntityLinkPacket',false))
+		if(defined($base.'DATA_LEAD_HOLDER') && !class_exists('\\pocketmine\\network\\mcpe\\protocol\\SetEntityLinkPacket',false))
 		{
 			$this->getLogger()->warning('你这奇葩核心删掉了SetEntityLink包,我不敢保证在玩家和NPC之间不会出现奇怪的绳子');
 		}
@@ -87,7 +97,7 @@ class Main extends \pocketmine\plugin\PluginBase implements \pocketmine\event\Li
 		
 		$this->initTasks();
 		$this->getServer()->getPluginManager()->registerEvents($this,$this);
-		$this->getLogger()->info(TextFormat::GREEN.'NPC数据加载完毕,耗时'.(microtime(true)-$start).'秒');
+		$this->getLogger()->info(TextFormat::GREEN.'NPC数据加载完毕,耗时'.(microtime(true)-$start).'秒，'.'此为新月猫Neko版');
 	}
 	
 	public function initTasks()
@@ -96,7 +106,7 @@ class Main extends \pocketmine\plugin\PluginBase implements \pocketmine\event\Li
 		$this->getServer()->getScheduler()->scheduleRepeatingTask($this->quickSystemTask,1);
 	}
 	
-	public function onCommand(\pocketmine\command\CommandSender $sender,\pocketmine\command\Command $command,$label,array $args)
+	public function onCommand(CommandSender $sender,Command $command,$label,array $args)
 	{
 		unset($command,$label);
 		if(!isset($args[0]))
@@ -427,7 +437,7 @@ class Main extends \pocketmine\plugin\PluginBase implements \pocketmine\event\Li
 			}
 			$item[0]=intval($item[0]);
 			$item[1]=intval($item[1]);
-			NPC::$pool[$args[1]]->setHandItem(\pocketmine\item\Item::get($item[0],$item[1]));
+			NPC::$pool[$args[1]]->setHandItem(Item::get($item[0],$item[1]));
 			$sender->sendMessage('[NPC] '.TextFormat::GREEN.'手持物品更换成功');
 			break;
 		case 'tphere':
@@ -473,27 +483,27 @@ class Main extends \pocketmine\plugin\PluginBase implements \pocketmine\event\Li
 		return true;
 	}
 	
-	public function onPlayerMove(\pocketmine\event\player\PlayerMoveEvent $event)
+	public function onPlayerMove(PlayerMoveEvent $event)
 	{
 		NPC::playerMove($event->getPlayer());
 		unset($event);
 	}
 	
-	public function onDataPacketReceive(\pocketmine\event\server\DataPacketReceiveEvent $event)
+	public function onDataPacketReceive(DataPacketReceiveEvent $event)
 	{
 		NPC::packetReceive($event->getPlayer(),$event->getPacket());
 		unset($event);
 	}
 	
-	public function onPlayerJoin(\pocketmine\event\player\PlayerJoinEvent $event)
+	public function onPlayerJoin(PlayerJoinEvent $event)
 	{
 		NPC::spawnAllTo($event->getPlayer());
 		unset($event);
 	}
 	
-	public function onEntityLevelChange(\pocketmine\event\entity\EntityLevelChangeEvent $event)
+	public function onEntityLevelChange(EntityLevelChangeEvent $event)
 	{
-		if($event->getEntity() instanceof \pocketmine\Player)
+		if($event->getEntity() instanceof Player)
 		{
 			NPC::spawnAllTo($event->getEntity(),$event->getTarget());
 		}

@@ -6,12 +6,16 @@ Copyright © 2016 FENGberd All right reserved.
 GitHub Project:
 https://github.com/fengberd/FNPC
 */
+use pocketmine\scheduler\PluginTask;
 
-class QuickSystemTask extends \pocketmine\scheduler\PluginTask
+use FNPC\Main;
+use FNPC\npc\NPC;
+
+class QuickSystemTask extends PluginTask
 {
 	private $plugin;
 	
-	public function __construct(\FNPC\Main $plugin)
+	public function __construct(Main $plugin)
 	{
 		parent::__construct($plugin);
 		$this->plugin=$plugin;
@@ -20,7 +24,7 @@ class QuickSystemTask extends \pocketmine\scheduler\PluginTask
 	public function onRun($currentTick)
 	{
 		$this->plugin=$this->getOwner();
-		\FNPC\npc\NPC::tick();
+		NPC::tick();
 	}
 }
 ?>

@@ -10,6 +10,7 @@ https://github.com/fengberd/FNPC
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\level\Position;
+use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\utils\TextFormat;
 
 use FNPC\SystemProvider;
@@ -31,9 +32,9 @@ class TeleportNPC extends NPC
 		}
 		else if(isset($this->teleport['ip']))
 		{
-			if(class_exists('\\pocketmine\\network\\protocol\\TransferPacket'))
+			if(class_exists('\\pocketmine\\network\\mcpe\\protocol\\TransferPacket'))
 			{
-				$pk=new \pocketmine\network\mcpe\protocol\TransferPacket;
+				$pk=new TransferPacket;
 				$pk->address=$this->teleport['ip'];
 				$pk->port=intval($this->teleport['port']);
 				$player->dataPacket($pk);

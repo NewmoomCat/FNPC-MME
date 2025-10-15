@@ -10,17 +10,31 @@ https://github.com/fengberd/FNPC
 use pocketmine\Player;
 use pocketmine\Server;
 
+use pocketmine\item\Item;
+
 use pocketmine\entity\Entity;
+
+use pocketmine\level\Level;
+use pocketmine\level\Location;
+use pocketmine\level\Position;
+
+use pocketmine\network\mcpe\protocol\AddPlayerPacket;
+use pocketmine\network\mcpe\protocol\InteractPacket;
+use pocketmine\network\mcpe\protocol\MovePlayerPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\UUID;
 
 use pocketmine\math\Vector3;
 
 use FNPC\SystemProvider;
 use FNPC\Utils\Converter;
+use pocketmine\VersionInfo;
 
-class NPC extends \pocketmine\level\Location
+class NPC extends Location
 {
 	public static $pool=array();
 	public static $config=null;
@@ -78,9 +92,9 @@ class NPC extends \pocketmine\level\Location
 	
 	public static function packetReceive($player,$packet)
 	{
-		if($packet->pid()==\pocketmine\network\mcpe\protocol\ProtocolInfo::INTERACT_PACKET)
+		if($packet->pid()==ProtocolInfo::INTERACT_PACKET)
 		{
-			if(NPC::$packet_hash!=spl_object_hash($packet) && $packet->action == \pocketmine\network\protocol\InteractPacket::ACTION_LEFT_CLICK)
+			if(NPC::$packet_hash!=spl_object_hash($packet) && $packet->action == InteractPacket::ACTION_LEFT_CLICK)
 			{
 				NPC::$packet_hash=spl_object_hash($packet);
 				foreach(NPC::$pool as $npc)
@@ -141,7 +155,7 @@ class NPC extends \pocketmine\level\Location
 	{
 		$this->nid=$nid;
 		SystemProvider::debug('NPC:'.$this->nid.',construct_start');
-		$this->uuid=\pocketmine\utils\UUID::fromRandom();
+		$this->uuid=UUID::fromRandom();
 		$this->x=$x;
 		$this->y=$y;
 		$this->z=$z;
@@ -154,7 +168,7 @@ class NPC extends \pocketmine\level\Location
 		$this->eid=Entity::$entityCount++;
 		if($handItem===false)
 		{
-			$handItem=\pocketmine\item\Item::get(0);
+			$handItem=Item::get(0);
 		}
 		$this->handItem=$handItem;
 		if(isset(NPC::$pool[$this->nid]))
@@ -187,7 +201,7 @@ class NPC extends \pocketmine\level\Location
 		{
 			$yaw=-$yaw+180;
 		}
-		$pk=new \pocketmine\network\mcpe\protocol\MovePlayerPacket();
+		$pk=new MovePlayerPacket();
 		$pk->eid=$this->getEID();
 		$pk->x=$this->x;
 		$pk->y=$this->y+1.62;
@@ -220,7 +234,7 @@ class NPC extends \pocketmine\level\Location
 			$this->pay=$this->get($cfg,'pay');
 			$this->extra=$this->get($cfg,'extra');
 			SystemProvider::debug('NPC:'.$this->nid.',reload_item');
-			$this->handItem=\pocketmine\item\Item::get($cfg['handItem']['id'],$cfg['handItem']['data']);
+			$this->handItem=Item::get($cfg['handItem']['id'],$cfg['handItem']['data']);
 			SystemProvider::debug('NPC:'.$this->nid.',reload_skin_start');
 			if(is_file(SystemProvider::$plugin->getDataFolder().'skins/'.$this->get($cfg,'skin')))
 			{
@@ -338,7 +352,7 @@ class NPC extends \pocketmine\level\Location
 			NPC::$config->remove($this->getId());
 			NPC::$config->save();
 		}
-		unset(NPC::$pool[$this->getId()],$this);
+		unset(NPC::$pool[$this->getId()]);
 	}
 	
 	public function getEID()
@@ -381,7 +395,7 @@ class NPC extends \pocketmine\level\Location
 		$this->x=$pos->x;
 		$this->y=$pos->y;
 		$this->z=$pos->z;
-		if($pos instanceof \pocketmine\level\Position)
+		if($pos instanceof Position)
 		{
 			$this->level=$pos->getLevel()->getFolderName();
 			$this->spawnToAll();
@@ -415,7 +429,7 @@ class NPC extends \pocketmine\level\Location
 	
 	public function despawnFromAll()
 	{
-		if(($level=SystemProvider::$server->getLevelByName($this->level)) instanceof \pocketmine\level\Level)
+		if(($level=SystemProvider::$server->getLevelByName($this->level)) instanceof Level)
 		{
 			$players=$level->getPlayers();
 		}
@@ -433,10 +447,10 @@ class NPC extends \pocketmine\level\Location
 	
 	public function despawnFrom($player)
 	{
-		$class='\\pocketmine\\network\\protocol\\Remove'.(class_exists('\\pocketmine\\network\\protocol\\RemovePlayerPacket',false)?'Player':'Entity').'Packet';
+		$class='\\pocketmine\\network\\mcpe\\protocol\\Remove'.(class_exists('\\pocketmine\\network\\protocol\\RemovePlayerPacket',false)?'Player':'Entity').'Packet';
 		$pk=new $class();
 		$pk->eid=$this->getEID();
-		if(\pocketmine\API_VERSION!='2.0.0')
+		if(VersionInfo::API_VERSION!='2.0.0')
 		{
 			$pk->clientId=$this->uuid;
 		}
@@ -447,7 +461,7 @@ class NPC extends \pocketmine\level\Location
 	
 	public function spawnToAll()
 	{
-		if(($level=SystemProvider::$server->getLevelByName($this->level)) instanceof \pocketmine\level\Level)
+		if(($level=SystemProvider::$server->getLevelByName($this->level)) instanceof Level)
 		{
 			$players=$level->getPlayers();
 		}
@@ -474,7 +488,7 @@ class NPC extends \pocketmine\level\Location
 			$this->despawnFrom($player);
 			return false;
 		}
-		$pk=new \pocketmine\network\mcpe\protocol\AddPlayerPacket();
+		$pk=new AddPlayerPacket();
 		$pk->clientID=$this->clientID;
 		$pk->username=$this->nametag;
 		$pk->eid=$this->getEID();
@@ -497,11 +511,11 @@ class NPC extends \pocketmine\level\Location
 			$flags^=1<<Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
 			$pk->metadata[Entity::DATA_FLAGS]=[Entity::DATA_TYPE_LONG,$flags];
 		}
-		if(defined($base.'DATA_LEAD_HOLDER') && class_exists('\\pocketmine\\network\\protocol\\SetEntityLinkPacket',false))
+		if(defined($base.'DATA_LEAD_HOLDER') && class_exists('\\pocketmine\\network\\mcpe\\protocol\\SetEntityLinkPacket',false))
 		{
 			$pk->metadata[Entity::DATA_LEAD_HOLDER]=[Entity::DATA_TYPE_LONG,-1];
 			$pk->metadata[Entity::DATA_LEAD]=[Entity::DATA_TYPE_BYTE,0];
-			$pk1=new \pocketmine\network\mcpe\protocol\SetEntityLinkPacket();
+			$pk1=new SetEntityLinkPacket();
 			$pk1->from=$this->getId();
 			$pk1->to=0;
 			$pk1->type=3;
@@ -517,7 +531,7 @@ class NPC extends \pocketmine\level\Location
 	
 	public function sendPosition()
 	{
-		$pk=new \pocketmine\network\mcpe\protocol\MovePlayerPacket();
+		$pk=new MovePlayerPacket();
 		$pk->eid=$this->getEID();
 		$pk->x=$this->x;
 		$pk->y=$this->y+1.62;

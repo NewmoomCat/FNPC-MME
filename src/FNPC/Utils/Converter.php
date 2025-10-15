@@ -7,6 +7,8 @@ GitHub Project:
 https://github.com/fengberd/FNPC
 */
 
+use pocketmine\utils\TextFormat;
+
 use FNPC\SystemProvider;
 
 class Converter
@@ -83,7 +85,7 @@ class Converter
 	{
 		if(substr($ppm,0,2)!=='P6')
 		{
-			SystemProvider::$plugin->getLogger()->info(\pocketmine\utils\TextFormat::RED.'错误的PPM图片,仅支持Binary格式');
+			SystemProvider::$plugin->getLogger()->info(TextFormat::RED.'错误的PPM图片,仅支持Binary格式');
 			unset($ppm);
 			return false;
 		}
